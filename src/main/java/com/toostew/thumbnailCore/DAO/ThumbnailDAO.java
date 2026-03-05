@@ -4,6 +4,7 @@ import com.toostew.thumbnailCore.exceptions.ThumbnailDAOException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 import com.toostew.thumbnailCore.Entities.Thumbnail;
 
@@ -17,7 +18,7 @@ public class ThumbnailDAO {
     }
 
 
-
+    @Transactional
     public void createThumbnail(Thumbnail thumbnail) {
         try {
             entityManager.persist(thumbnail);
@@ -43,6 +44,7 @@ public class ThumbnailDAO {
 
     }
 
+    @Transactional
     public void updateThumbnail(Thumbnail thumbnail) {
         try {
             entityManager.merge(thumbnail);
@@ -55,6 +57,7 @@ public class ThumbnailDAO {
         }
     }
 
+    @Transactional
     public void deleteThumbnail(int id) {
         try {
             System.out.println("Attempting to delete thumbnail with id " + id);

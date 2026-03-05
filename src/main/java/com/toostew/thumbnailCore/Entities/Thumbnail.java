@@ -1,6 +1,7 @@
 package com.toostew.thumbnailCore.Entities;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,6 +10,7 @@ public class Thumbnail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private int id;
 
     @Column(name = "stored_name")
@@ -16,6 +18,7 @@ public class Thumbnail {
 
     @Column(name = "file_records_id")
     private int file_records_id;
+
 
 
 
