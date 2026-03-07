@@ -6,6 +6,8 @@ import com.toostew.thumbnailCore.exceptions.ThumbnailDAOException;
 import com.toostew.thumbnailCore.exceptions.ThumbnailServiceException;
 import org.springframework.stereotype.Service;
 
+import java.awt.image.BufferedImage;
+
 @Service
 public class ThumbnailService {
 
@@ -46,5 +48,9 @@ public class ThumbnailService {
             throw new ThumbnailServiceException("ThumbnailService: Thumbnail couldn't be deleted", e);
         }
     }
+
+    //Thumbnail generation
+
+
 
 }

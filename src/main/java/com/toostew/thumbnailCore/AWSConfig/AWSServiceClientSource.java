@@ -17,17 +17,17 @@ public class AWSServiceClientSource {
 
 
     //these values should absolutely NOT be hardcoded in for security reasons dummy
-    @Value("${Access.Key.ID}")
+    @Value("${First.Access.Key.ID}")
     private String accessKeyId;
 
-    @Value("${Token.value}")
+    @Value("${First.Token.value}")
     private String tokenValue;
 
-    @Value("${Secret.Access.Key}")
+    @Value("${First.Secret.Access.Key}")
     private String secretAccessKey;
 
     @Value("${R2.URI}")
-    private String R2URI;
+    private String r2URI;
 
 
     //every aws service we want to access requires a singleton instance
@@ -42,7 +42,7 @@ public class AWSServiceClientSource {
             S3Client s3Client = S3Client.builder()
                     .region(Region.of("auto")) // set region to auto, per R2 specs
                     .endpointOverride( //set the endpoint to R2 from cloudflare
-                            URI.create(R2URI))
+                            URI.create(r2URI))
                     .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId,secretAccessKey)))
                     .serviceConfiguration(S3Configuration.builder()
                             .checksumValidationEnabled(false) //at the current moment, there is no better alternative
