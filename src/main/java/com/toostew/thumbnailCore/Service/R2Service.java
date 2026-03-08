@@ -6,7 +6,9 @@ import com.toostew.thumbnailCore.exceptions.R2ServiceException;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -35,7 +37,7 @@ public class R2Service {
     //Buffered Input stream adds a memory buffer
     //normally, input stream reads 1 byte at a time from storage directly
     //Buffered input stream chunks to memory (8kb), and reads from memory
-    public BufferedInputStream getImageFromR2AsBufferedInputStream(String stored_name) {
+    public BufferedInputStream getObjectFromR2AsBufferedInputStream(String stored_name) {
         try {
             ResponseInputStream<GetObjectResponse> temp = s3Client.getObject(GetObjectRequest.builder()
                     .bucket(firstBucketName)
@@ -54,12 +56,24 @@ public class R2Service {
     }
 
     public void postObjectToR2(String bucket, String key, InputStream inputStream, long size, String contentType){
-        s3Client.putObject(PutObjectRequest.builder()
-                        .bucket(bucket)
-                        .key(key)
-                        .contentType(contentType)
-                        .build(),
-                RequestBody.fromInputStream(inputStream, size));
+         try {
+             s3Client.putObject(PutObjectRequest.builder()
+                             .bucket(bucket)
+                             .key(key)
+                             .contentType(contentType)
+                             .build(),
+                            RequestBody.fromInputStream(inputStream, size));
+         } catch (InvalidRequestException e) {
+             throw new  R2ServiceException("R2Service: invalid request", e);
+         } catch (InvalidWriteOffsetException e) {
+             throw new  R2ServiceException("R2Service: invalid write offset", e); //whatever this means
+         } catch (AwsServiceException e) {
+             throw new  R2ServiceException("R2Service: aws service exception", e);
+         } catch (SdkClientException e) {
+            throw new  R2ServiceException("R2Service: sdk exception", e);
+         } catch (Exception e) {
+            throw new   R2ServiceException("R2Service: unknown error", e);
+         }
     }
 
 
