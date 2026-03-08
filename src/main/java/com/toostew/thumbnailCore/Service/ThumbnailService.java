@@ -4,9 +4,13 @@ import com.toostew.thumbnailCore.DAO.ThumbnailDAO;
 import com.toostew.thumbnailCore.Entities.Thumbnail;
 import com.toostew.thumbnailCore.exceptions.ThumbnailDAOException;
 import com.toostew.thumbnailCore.exceptions.ThumbnailServiceException;
+import net.coobird.thumbnailator.Thumbnails;
+import org.hibernate.result.Output;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.*;
 
 @Service
 public class ThumbnailService {
@@ -49,8 +53,36 @@ public class ThumbnailService {
         }
     }
 
+
+
+
     //Thumbnail generation
 
 
+    //return BufferedImage from InputStream
+    public BufferedImage generateThumbnailFromInputStream(int h, int w, BufferedInputStream image, String format) {
+        try {
+            //fuck my stupid chud life
+            String reformat = format.replaceFirst("image/","");
+             return Thumbnails.of(image)
+                    .outputFormat(reformat)
+                    .size(h, w)
+                     .keepAspectRatio(false)
+                    .asBufferedImage();
+        } catch (Exception e) {
+            throw new  ThumbnailServiceException("ThumbnailService: Thumbnail couldn't be generated", e);
+        }
+    }
+
+    //return byte array from BufferedImage (should probably conolidate this)
+    public byte[] bufferedImageToByteArray(BufferedImage bufferedImage, String formatName) throws IOException {
+        String reformat = formatName.replaceFirst("image/","");
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+            ImageIO.write(bufferedImage, reformat, baos);
+            return baos.toByteArray();
+        } catch (Exception e) {
+            throw new ThumbnailServiceException("ThumbnailService: Thumbnail couldn't be generated", e);
+        }
+    }
 
 }

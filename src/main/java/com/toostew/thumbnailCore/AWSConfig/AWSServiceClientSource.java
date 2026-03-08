@@ -17,13 +17,13 @@ public class AWSServiceClientSource {
 
 
     //these values should absolutely NOT be hardcoded in for security reasons dummy
-    @Value("${First.Access.Key.ID}")
+    @Value("${Thumbnail.Access.Key.ID}")
     private String accessKeyId;
 
-    @Value("${First.Token.value}")
+    @Value("${Thumbnail.Token.value}")
     private String tokenValue;
 
-    @Value("${First.Secret.Access.Key}")
+    @Value("${Thumbnail.Secret.Access.Key}")
     private String secretAccessKey;
 
     @Value("${R2.URI}")
