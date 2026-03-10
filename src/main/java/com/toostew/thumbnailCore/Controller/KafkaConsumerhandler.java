@@ -1,4 +1,4 @@
-package com.toostew.thumbnailCore.RESTController;
+package com.toostew.thumbnailCore.Controller;
 
 
 import com.toostew.thumbnailCore.Entities.Thumbnail;
@@ -9,27 +9,21 @@ import com.toostew.thumbnailCore.Service.ThumbnailService;
 import com.toostew.thumbnailCore.exceptions.RestControllerHandlerException;
 import com.toostew.thumbnailCore.exceptions.ThumbnailServiceException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
-import tools.jackson.databind.json.JsonMapper;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-//at it's core the thumbnail service is a RESTFUL service that receives thumbnail requests, converts file
-//to appropriate thumbnail, thne uploads to MYSQL and R2
-@RestController
-@RequestMapping("/generate")
-public class RestControllerHandler {
+@Component
+public class KafkaConsumerhandler {
 
-    private ThumbnailService thumbnailService;
-    private JsonMapper jsonMapper;
-    private R2Service r2Service;
-    private PDFService pdfService;
-
+    //NOT USED, @KAFKALISTENER REQUIRES CONSTANT
+    @Value("${kafka.topic}")
+    private String kafkaTopic;
 
     @Value("${First.Bucket.Name}")
     private String firstBucket;
@@ -43,16 +37,26 @@ public class RestControllerHandler {
     @Value("${Thumbnail.Width}")
     private int  thumbnailWidth;
 
-    public RestControllerHandler(ThumbnailService thumbnailService, JsonMapper jsonMapper,
-                                 R2Service r2Service, PDFService pdfService) {
-        this.thumbnailService = thumbnailService;
-        this.jsonMapper = jsonMapper;
+    private R2Service r2Service;
+    private ThumbnailService thumbnailService;
+    private PDFService pdfService;
+
+    public KafkaConsumerhandler(R2Service r2Service, ThumbnailService thumbnailService, PDFService pdfService) {
         this.r2Service = r2Service;
+        this.thumbnailService = thumbnailService;
         this.pdfService = pdfService;
     }
 
-    @GetMapping("/thumbnail")
-    public void createThumbnail(@RequestBody ThumbnailRequest thumbnailRequest) {
+    //think of this like a while loop that constantly checks the "generate-thumbnail" topic
+    //everytime a new message comes in, this method will run and when it terminates
+    //will increment the "offset" on kafka
+    //the offset is basically the bookmark. everything behind the bookmark is "settled"
+    //unless the offset is reset all the messages before the offset will not be rerun
+    //
+    @KafkaListener(id = "kafka-thumbnail-consumer", topics = "generate-thumbnail")
+    public void kafkaConsumer(ThumbnailRequest thumbnailRequest){
+        System.out.println(thumbnailRequest);
+
         try {
             String stored_thumbnail_UUID = UUID.randomUUID().toString();
             BufferedInputStream temp = r2Service.getObjectFromR2AsBufferedInputStream(thumbnailRequest.getStored_name());
@@ -86,24 +90,16 @@ public class RestControllerHandler {
             tempThumbnail.setStored_name(stored_thumbnail_UUID);
             tempThumbnail.setFile_records_id(thumbnailRequest.getFile_records_id());
             thumbnailService.createThumbnail(tempThumbnail);
+            System.out.println("kafka request fulfilled");
+
 
         } catch (ThumbnailServiceException e) {
             throw new RestControllerHandlerException("Rest Controller Handler: Couldn't create thumbnail", e);
         } catch (Exception e){
             throw new  RestControllerHandlerException("Rest Controller Handler: Couldn't create thumbnail", e);
         }
+
+
     }
-
-    @GetMapping("/test/{id}")
-    public Thumbnail getThumbnail(@PathVariable int id) {
-        try {
-            return thumbnailService.getThumbnail(id);
-        } catch (ThumbnailServiceException e) {
-            throw new RestControllerHandlerException("Rest Controller Handler: Couldn't get thumbnail", e);
-        }
-    }
-
-
-
 
 }
