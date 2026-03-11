@@ -36,4 +36,9 @@ public class ThumbnailRequest {
     public void setContent_type(String content_type) {
         this.content_type = content_type;
     }
+
+    @Override
+    public String toString() {
+        return "{File_records_ID: " + file_records_id + ", Stored_name: " + stored_name + ", Content_type: " + content_type + "}";
+    }
 }
