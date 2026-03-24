@@ -1,5 +1,6 @@
 HELP.md
 Dockerfile
+src/main/resources/application-test.properties
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

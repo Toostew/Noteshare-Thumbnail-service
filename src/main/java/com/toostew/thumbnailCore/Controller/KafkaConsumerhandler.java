@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Component
@@ -58,7 +59,7 @@ public class KafkaConsumerhandler {
         System.out.println(thumbnailRequest);
 
         try {
-            String stored_thumbnail_UUID = UUID.randomUUID().toString();
+            String stored_thumbnail_UUID = UUID.randomUUID().toString() + "-THUMBNAIL-" + LocalDate.now().toString();
             BufferedInputStream temp = r2Service.getObjectFromR2AsBufferedInputStream(thumbnailRequest.getStored_name());
 
             //if the contentType is an image we will process it according to the image track
